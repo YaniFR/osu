@@ -37,9 +37,10 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             double effectiveBPM = noteObject.EffectiveBPM;
             double max = 180.0;
             double test = 200.0;
+            double ObjectDensity = CalculateObjectDensity(noteObject);
 
             double value = test * 1 / effectiveBPM - max;
-            double adjustedValue = (value / effectiveBPM * 3) / (1.5 / CalculateObjectDensity(noteObject));
+            double adjustedValue = (value / effectiveBPM * 3) / (1.5 / ObjectDensity);
 
 
             return low_sv_multiplier * adjustedValue;
