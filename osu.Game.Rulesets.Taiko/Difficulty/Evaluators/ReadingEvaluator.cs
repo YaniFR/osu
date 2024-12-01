@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 
@@ -9,6 +10,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
     public static class ReadingEvaluator
     {
         private const double high_sv_multiplier = 1.0;
+        private const double low_sv_multiplier = 1.0;
 
         /// <summary>
         /// Calculates the influence of higher slider velocities on hitobject difficulty.
@@ -30,6 +32,19 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             return high_sv_multiplier * DifficultyCalculationUtils.Logistic(effectiveBPM, center, 1.0 / (range / 10));
         }
 
+        public static double LowSV(TaikoDifficultyHitObject noteObject)
+        {
+            double effectiveBPM = noteObject.EffectiveBPM;
+            double max = 180.0;
+            double test = 200.0;
+
+            double value = test * 1 / effectiveBPM - max;
+            double adjustedValue = (value / effectiveBPM * 3) / (1.5 / CalculateObjectDensity(noteObject));
+
+
+            return low_sv_multiplier * adjustedValue;
+        }
+
         /// <summary>
         /// Calculates the object density based on the DeltaTime, EffectiveBPM, and CurrentSliderVelocity.
         /// </summary>
@@ -41,5 +56,6 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
             return 1 - DifficultyCalculationUtils.Logistic(noteObject.EffectiveBPM, objectDensity, 1.0 / 240);
         }
+
     }
 }

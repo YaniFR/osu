@@ -42,6 +42,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
             currentStrain *= StrainDecayBase;
             currentStrain += ReadingEvaluator.EvaluateDifficultyOf(taikoObject) * SkillMultiplier;
+            currentStrain += ReadingEvaluator.LowSV(taikoObject) * SkillMultiplier;
 
             return currentStrain;
         }
