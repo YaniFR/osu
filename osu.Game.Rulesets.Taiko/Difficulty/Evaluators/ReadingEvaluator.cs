@@ -10,7 +10,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
     public static class ReadingEvaluator
     {
         private const double high_sv_multiplier = 1.0;
-        private const double low_sv_multiplier = 1.0;
+        private const double low_sv_multiplier = 3.5;
 
         /// <summary>
         /// Calculates the influence of higher slider velocities on hitobject difficulty.
@@ -34,17 +34,22 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
         public static double LowSV(TaikoDifficultyHitObject noteObject)
         {
+            const double maxBpmCap = 150;
+            const double minBpmCap = 100;
             double effectiveBPM = noteObject.EffectiveBPM;
-            double bpmCap = 150;
-            double effectiveCapBpm = Math.Min(noteObject.EffectiveBPM, bpmCap);
-            double low_sv_bonus = Math.Clamp(Math.Pow(Math.Max(0, Math.Abs(effectiveCapBpm-150) / 150),0.5),0,0.57);
+            
+            double low_sv_percent_cap = Math.Sqrt(Math.Abs(minBpmCap - maxBpmCap) / 150);
+
+            double effectiveCapBpm = Math.Clamp(noteObject.EffectiveBPM, 1 , maxBpmCap);
+            double ebpmRatio = Math.Abs(effectiveCapBpm - maxBpmCap) / maxBpmCap;
+            double low_sv_bonus = Math.Clamp(Math.Sqrt(Math.Max(0 , ebpmRatio)), 0 , low_sv_percent_cap);
 
             double ObjectDensity = CalculateObjectDensity(noteObject);
 
-            double value = 200 * 1 / effectiveCapBpm - bpmCap*1.33;
-            double adjustedValue = (value / effectiveCapBpm* 3) / (1.5 / ObjectDensity);
+            double value = 1 / effectiveCapBpm - maxBpmCap;
+            double adjustedValue = (value / effectiveCapBpm) / (1.5 / ObjectDensity);
 
-            return low_sv_multiplier * adjustedValue * (low_sv_bonus*0.9);
+            return low_sv_multiplier * adjustedValue * low_sv_bonus;
         }
 
         /// <summary>
