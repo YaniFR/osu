@@ -34,15 +34,17 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
         public static double LowSV(TaikoDifficultyHitObject noteObject)
         {
-            double bpmCap = 100.0;
-            double effectiveBPM = Math.Max(bpmCap,noteObject.EffectiveBPM);
+            double effectiveBPM = noteObject.EffectiveBPM;
+            double bpmCap = 150;
+            double effectiveCapBpm = Math.Min(noteObject.EffectiveBPM, bpmCap);
+            double low_sv_bonus = Math.Clamp(Math.Pow(Math.Max(0, Math.Abs(effectiveCapBpm-150) / 150),0.5),0,0.57);
+
             double ObjectDensity = CalculateObjectDensity(noteObject);
 
-            double value = 200 * 1 / effectiveBPM - bpmCap;
-            double adjustedValue = (value / effectiveBPM * 2.5) / (1.5 / ObjectDensity);
+            double value = 200 * 1 / effectiveCapBpm - bpmCap*1.33;
+            double adjustedValue = (value / effectiveCapBpm* 3) / (1.5 / ObjectDensity);
 
-
-            return low_sv_multiplier * adjustedValue;
+            return low_sv_multiplier * adjustedValue * (low_sv_bonus*0.9);
         }
 
         /// <summary>
