@@ -94,7 +94,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
 
             // Scale accuracy more harshly on nearly-completely mono (single coloured) speed maps.
             double accScalingExponent = 2 + attributes.MonoStaminaFactor;
-            double accScalingShift = 300 - 100 * attributes.MonoStaminaFactor;
+            double accScalingShift = 400 - 100 * attributes.MonoStaminaFactor;
 
             return difficultyValue * Math.Pow(SpecialFunctions.Erf(accScalingShift / (Math.Sqrt(2) * estimatedUnstableRate.Value)), accScalingExponent);
         }
@@ -156,7 +156,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
                 double n = totalHits;
 
                 // Proportion of greats + goods hit.
-                double p = totalSuccessfulHits / n;
+                double p = Math.Max(0, totalSuccessfulHits - 0.0005 * countOk) / n;
 
                 // We can be 99% confident that p is at least this value.
                 double pLowerBound = (n * p + z * z / 2) / (n + z * z) - z / (n + z * z) * Math.Sqrt(n * p * (1 - p) + z * z / 4);
