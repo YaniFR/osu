@@ -5,6 +5,7 @@ using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Objects;
+using osu.Game.Rulesets.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 {
@@ -45,6 +46,25 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             return 4;
         }
 
+        private static double doubletPenalty(TaikoDifficultyHitObject hitObject)
+        {   
+            var pattern = hitObject.Rhythm.EvenHitObjects;
+            double group = hitObject.Rhythm.EvenPatterns.Children.Count;
+            double penalty = 1.0;
+
+            if (pattern.Children.Count == 2 && hitObject.Colour.MonoStreak.HitObjects.Count == 2 && group > 6)
+            {
+                double ratio = pattern.HitObjectIntervalRatio;
+
+                penalty *= DifficultyCalculationUtils.Logistic(Math.Abs(1 - ratio), 0.1, 1, 1);
+                penalty *= DifficultyCalculationUtils.Logistic(Math.Abs(1 - ratio), 0.5, 1, 1);
+
+                return Math.Pow(penalty, 0.255 * Math.Pow(group , 0.099));
+            }
+
+            return 1.0;
+        }
+
         /// <summary>
         /// Evaluates the minimum mechanical stamina required to play the current object. This is calculated using the
         /// maximum possible interval between two hits using the same key, by alternating available fingers for each colour.
@@ -67,8 +87,14 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
                 return 0.0;
             }
 
+            
+
+
             double objectStrain = 0.5; // Add a base strain to all objects
             objectStrain += speedBonus(taikoCurrent.StartTime - keyPrevious.StartTime);
+
+            objectStrain *= doubletPenalty(taikoCurrent);
+
             return objectStrain;
         }
     }

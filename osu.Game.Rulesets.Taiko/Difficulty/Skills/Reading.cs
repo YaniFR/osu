@@ -20,8 +20,6 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
         private double currentStrain;
 
-        public double ObjectDensity { get; private set; }
-
         public Reading(Mod[] mods)
             : base(mods)
         {
@@ -29,20 +27,16 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
-            if (current is not TaikoDifficultyHitObject taikoObject)
-                return 0.0;
-
             // Drum Rolls and Swells are exempt.
             if (current.BaseObject is not Hit)
             {
                 return 0.0;
             }
 
-            ObjectDensity = ReadingEvaluator.CalculateObjectDensity(taikoObject) * 10;
+            var taikoObject = (TaikoDifficultyHitObject)current;
 
             currentStrain *= StrainDecayBase;
             currentStrain += ReadingEvaluator.EvaluateDifficultyOf(taikoObject) * SkillMultiplier;
-            currentStrain += ReadingEvaluator.LowSV(taikoObject) * SkillMultiplier;
 
             return currentStrain;
         }

@@ -46,39 +46,46 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         }
 
         /// <summary>
-        /// Determines if the pattern of hit object intervals is consistent based on a given threshold.
+        /// Determines if the changes in hit object intervals is consistent based on a given threshold.
         /// </summary>
-        private static bool isConsistentPattern(EvenHitObjects evenHitObjects, double threshold = 0.1)
+        private static double repeatedIntervalPenalty(EvenHitObjects evenHitObjects, double threshold = 0.1)
         {
-            // Collect the last 4 intervals (current and the last 3 previous).
-            List<double?> intervals = new List<double?>();
-            var currentObject = evenHitObjects;
-            const int interval_count = 4;
-
-            for (int i = 0; i < interval_count && currentObject != null; i++)
+            double sameInterval(EvenHitObjects startObject, int intervalCount)
             {
-                intervals.Add(currentObject.HitObjectInterval);
-                currentObject = currentObject.Previous;
-            }
+                List<double?> intervals = new List<double?>();
+                var currentObject = startObject;
 
-            intervals.RemoveAll(interval => interval == null);
-
-            // If there are fewer than 4 valid intervals, skip the consistency check.
-            if (intervals.Count < interval_count)
-                return false;
-
-            for (int i = 0; i < intervals.Count; i++)
-            {
-                for (int j = i + 1; j < intervals.Count; j++)
+                for (int i = 0; i < intervalCount && currentObject != null; i++)
                 {
-                    double ratio = intervals[i]!.Value / intervals[j]!.Value;
-                    if (Math.Abs(1 - ratio) <= threshold) // If any two intervals are similar, return true.
-                        return true;
+                    intervals.Add(currentObject.HitObjectInterval);
+                    currentObject = currentObject.Previous;
                 }
+
+                intervals.RemoveAll(interval => interval == null);
+
+                if (intervals.Count < intervalCount)
+                    return 1.0; // No penalty if there aren't enough valid intervals.
+
+                for (int i = 0; i < intervals.Count; i++)
+                {
+                    for (int j = i + 1; j < intervals.Count; j++)
+                    {
+                        double ratio = intervals[i]!.Value / intervals[j]!.Value;
+                        if (Math.Abs(1 - ratio) <= threshold) // If any two intervals are similar, apply a penalty.
+                            return 0.3;
+                    }
+                }
+
+                return 1.0; // No penalty if all intervals are different.
             }
 
-            // No similar intervals were found.
-            return false;
+            double longIntervalPenalty = sameInterval(evenHitObjects, 3);
+
+            double shortIntervalPenalty = evenHitObjects.Children.Count < 6
+                ? sameInterval(evenHitObjects, 4)
+                : 1.0; // Returns a non-penalty if there are 6 or more notes within an interval.
+
+            return Math.Min(longIntervalPenalty, shortIntervalPenalty); // Returns the harsher penalty between the two checks.
         }
 
         private static double evaluateDifficultyOf(EvenHitObjects evenHitObjects, double hitWindow)
@@ -99,11 +106,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
                     maxValue: 1);
             }
 
-            // Penalise regular intervals within the last four intervals.
-            if (isConsistentPattern(evenHitObjects))
-            {
-                intervalDifficulty *= 0.4;
-            }
+            // Apply consistency penalty
+            intervalDifficulty *= repeatedIntervalPenalty(evenHitObjects);
 
             // Penalise patterns that can be hit within a single hit window.
             intervalDifficulty *= DifficultyCalculationUtils.Logistic(
@@ -120,6 +124,9 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             return ratioDifficulty(evenPatterns.IntervalRatio);
         }
 
+        /// <summary>
+        /// Evaluate the difficulty of a hitobject considering its interval change.
+        /// </summary>
         public static double EvaluateDifficultyOf(DifficultyHitObject hitObject, double hitWindow)
         {
             TaikoDifficultyHitObjectRhythm rhythm = ((TaikoDifficultyHitObject)hitObject).Rhythm;

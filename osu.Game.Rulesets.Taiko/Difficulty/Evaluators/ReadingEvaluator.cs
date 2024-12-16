@@ -1,7 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 
@@ -10,7 +9,6 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
     public static class ReadingEvaluator
     {
         private const double high_sv_multiplier = 1.0;
-        private const double low_sv_multiplier = 3.5;
 
         /// <summary>
         /// Calculates the influence of higher slider velocities on hitobject difficulty.
@@ -31,38 +29,5 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
             return high_sv_multiplier * DifficultyCalculationUtils.Logistic(effectiveBPM, center, 1.0 / (range / 10));
         }
-
-        public static double LowSV(TaikoDifficultyHitObject noteObject)
-        {
-            const double maxBpmCap = 150;
-            const double minBpmCap = 100;
-            double effectiveBPM = noteObject.EffectiveBPM;
-            
-            double low_sv_percent_cap = Math.Sqrt(Math.Abs(minBpmCap - maxBpmCap) / 150);
-
-            double effectiveCapBpm = Math.Clamp(noteObject.EffectiveBPM, 1 , maxBpmCap);
-            double ebpmRatio = Math.Abs(effectiveCapBpm - maxBpmCap) / maxBpmCap;
-            double low_sv_bonus = Math.Clamp(Math.Sqrt(Math.Max(0 , ebpmRatio)), 0 , low_sv_percent_cap);
-
-            double ObjectDensity = CalculateObjectDensity(noteObject);
-
-            double value = 1 / effectiveCapBpm - maxBpmCap;
-            double adjustedValue = (value / effectiveCapBpm) / (1.5 / ObjectDensity);
-
-            return low_sv_multiplier * adjustedValue * low_sv_bonus;
-        }
-
-        /// <summary>
-        /// Calculates the object density based on the DeltaTime, EffectiveBPM, and CurrentSliderVelocity.
-        /// </summary>
-        /// <param name="noteObject">The current noteObject to evaluate.</param>
-        /// <returns>The calculated object density.</returns>
-        public static double CalculateObjectDensity(TaikoDifficultyHitObject noteObject)
-        {
-            double objectDensity = 50 * DifficultyCalculationUtils.Logistic(noteObject.DeltaTime, 200, 1.0 / 300);
-
-            return 1 - DifficultyCalculationUtils.Logistic(noteObject.EffectiveBPM, objectDensity, 1.0 / 240);
-        }
-
     }
 }
