@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Objects;
@@ -48,18 +49,35 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
         private static double doubletPenalty(TaikoDifficultyHitObject hitObject)
         {   
-            var pattern = hitObject.Rhythm.EvenHitObjects;
-            double group = hitObject.Rhythm.EvenPatterns.Children.Count;
+            var evenHitObjects = hitObject.Rhythm.EvenHitObjects;
+            var evenPatterns = hitObject.Rhythm.EvenPatterns;
+            var mono = hitObject.Colour.MonoStreak;
             double penalty = 1.0;
 
-            if (pattern.Children.Count == 2 && hitObject.Colour.MonoStreak.HitObjects.Count == 2 && group > 6)
+            List<TaikoDifficultyHitObject> hitObjects = new List<TaikoDifficultyHitObject>();
+
+            int doublet = 3;
+            
+            if (evenHitObjects == null || evenPatterns == null || mono == null)
+                return 1.0;
+
+            for (int i = 0; i < doublet; i++)
             {
-                double ratio = pattern.HitObjectIntervalRatio;
+                if (hitObject.Previous(i) is TaikoDifficultyHitObject previousHitobject)
+                {
+                    if (previousHitobject.Rhythm?.EvenHitObjects?.Children?.Count == 2)
+                    hitObjects.Add(previousHitobject);
+                }
+            }
+
+            if (evenHitObjects.Children.Count == 2 && mono.HitObjects.Count == 2 && hitObjects.Count == 3)
+            {
+                double ratio = evenHitObjects.HitObjectIntervalRatio;
 
                 penalty *= DifficultyCalculationUtils.Logistic(Math.Abs(1 - ratio), 0.1, 1, 1);
                 penalty *= DifficultyCalculationUtils.Logistic(Math.Abs(1 - ratio), 0.5, 1, 1);
 
-                return Math.Pow(penalty, 0.255 * Math.Pow(group , 0.099));
+                return Math.Pow(penalty, 0.255 * Math.Pow(evenPatterns.Children.Count , 0.445));
             }
 
             return 1.0;

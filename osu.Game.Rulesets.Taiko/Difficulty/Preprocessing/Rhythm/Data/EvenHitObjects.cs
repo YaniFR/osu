@@ -20,6 +20,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm.Data
         /// </summary>
         public double StartTime => Children[0].StartTime;
 
+        public double EndTime => Children[^1].EndTime;
+
         /// <summary>
         /// The interval between the first and final hit object within this group.
         /// </summary>
