@@ -86,7 +86,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
                 return 1.0;
 
             //if (evenPatterns.Children.Count > 1 && hitObject.Colour.MonoStreak?.HitObjects.Count != 2 && evenHitObjects.HitObjectIntervalRatio != evenPatterns.ChildrenInterval)
-            if (evenHitObjects.Previous.Children.Count == 2 && evenHitObjects.StartTime - evenHitObjects.Previous.EndTime > 100 && evenHitObjects.Previous.Duration < 55 && evenHitObjects.Children.Count > 1) // && ((evenHitObjects.HitObjectIntervalRatio == evenHitObjects.Previous.Previous.HitObjectIntervalRatio) && evenHitObjects.Previous.HitObjectIntervalRatio < evenHitObjects.HitObjectIntervalRatio))
+            if (evenHitObjects.Previous.Children.Count == 2 && evenHitObjects.StartTime - evenHitObjects.Previous.EndTime > 100 && evenHitObjects.Previous.Duration < 55 && evenHitObjects.Children.Count > 2) // && ((evenHitObjects.HitObjectIntervalRatio == evenHitObjects.Previous.Previous.HitObjectIntervalRatio) && evenHitObjects.Previous.HitObjectIntervalRatio < evenHitObjects.HitObjectIntervalRatio))
             //if (evenHitObjects.Previous.Children.Count == 2 && ((evenHitObjects.HitObjectIntervalRatio == evenHitObjects.Previous.Previous.HitObjectIntervalRatio) && evenHitObjects.Previous.HitObjectIntervalRatio > evenHitObjects.HitObjectIntervalRatio))
             {
 
@@ -103,7 +103,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
                 double doubletRatio = evenHitObjects.Children.Count > 1 ? doubletCount / (evenHitObjects.Children.Count - 1) : 0.0;
                 penalty = DifficultyCalculationUtils.Logistic(doubletRatio, 0.5, 1.5, 1.0);
-                return Math.Pow(penalty,  1.2);
+                return Math.Pow(penalty,  4);
                 //return 0;
             }
 
