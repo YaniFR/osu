@@ -19,6 +19,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm.Data
         /// </summary>
         public double ChildrenInterval => Children.Count > 1 ? Children[1].Interval : Children[0].Interval;
 
+        public double AverageInterval => Children.Average(x => x.Interval);
+
+        public double Duration => Children[^1].EndTime - Children[0].StartTime;
+
+        public double Interval => Children[0].DeltaTime;
+
         /// <summary>
         /// The ratio of <see cref="ChildrenInterval"/> between this and the previous <see cref="EvenPatterns"/>. In the
         /// case where there is no previous <see cref="EvenPatterns"/>, this will have a value of 1.

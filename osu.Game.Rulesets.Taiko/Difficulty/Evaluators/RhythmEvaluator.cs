@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         /// <summary>
         /// Calculates the difficulty of a given ratio using a combination of periodic penalties and bonuses.
         /// </summary>
-        private static double ratioDifficulty(double ratio, int terms = 8)
+        private static double ratioDifficulty(double ratio, double duration = 1.0, double diff = 1, double interval = 1.0, double childrenInterval = 1.0, int terms = 8)
         {
             // Sum of n = 8 terms of periodic penalty.
             double difficulty = 0;
@@ -42,7 +42,21 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             // Penalize ratios that are VERY near 1
             difficulty -= DifficultyCalculationUtils.BellCurve(ratio, 1, 0.3);
 
-            return difficulty / Math.Sqrt(8);
+            //difficulty /=  ratio < 0.3 ? Math.Pow(duration, 1) : 1;
+            //difficulty *= DifficultyCalculationUtils.Logistic(ratio, 0.25, 1 / duration, 1);
+            //difficulty *= DifficultyCalculationUtils.Logistic(ratio,0.25,-duration,3.9);
+            //difficulty *= Math.Pow(ratio / duration, 0.5); 
+            //difficulty *=  Math.Abs(1 - ratio) != 0 ? Math.Log(Math.Pow(duration, 0.65)) : 1;
+            //difficulty *= Math.Abs(1 - ratio) > 0.8 ? Math.Pow(duration, 0.1) : 1;
+
+            //duration = Math.Max(duration, 300);
+
+            //difficulty *= diff != 0.35 && (interval <= childrenInterval) ? duration : 1;
+            //difficulty *=  diff == 0.3 ? 0 : 1;
+            difficulty *= diff != 0.35 && interval < childrenInterval ? 1 : 0.0;
+            
+            return difficulty / Math.Pow(8, 0.15);
+            //return difficulty / Math.Sqrt(8);
         }
 
         /// <summary>
@@ -108,6 +122,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
             // Apply consistency penalty
             intervalDifficulty *= repeatedIntervalPenalty(evenHitObjects);
+            //intervalDifficulty *= doubletPenalty(evenHitObjects, evenPatterns);
 
             // Penalise patterns that can be hit within a single hit window.
             intervalDifficulty *= DifficultyCalculationUtils.Logistic(
@@ -119,9 +134,9 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             return intervalDifficulty;
         }
 
-        private static double evaluateDifficultyOf(EvenPatterns evenPatterns)
+        private static double evaluateDifficultyOf(EvenPatterns evenPatterns, double difficulty)
         {
-            return ratioDifficulty(evenPatterns.IntervalRatio);
+            return ratioDifficulty(evenPatterns.IntervalRatio, evenPatterns.Duration == 0 ? 1 : evenPatterns.Duration, difficulty, evenPatterns.Interval, evenPatterns.AverageInterval);
         }
 
         /// <summary>
@@ -130,15 +145,19 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         public static double EvaluateDifficultyOf(DifficultyHitObject hitObject, double hitWindow)
         {
             TaikoDifficultyHitObjectRhythm rhythm = ((TaikoDifficultyHitObject)hitObject).Rhythm;
+            TaikoDifficultyHitObject dhitObject = (TaikoDifficultyHitObject)hitObject;
             double difficulty = 0.0d;
+            /*double dz = 1;
+            if (rhythm.EvenHitObjects?.FirstHitObject == hitObject && rhythm.EvenPatterns?.FirstHitObject == hitObject)
+                dz = doubletPenalty((TaikoDifficultyHitObject)hitObject);*/
 
             if (rhythm.EvenHitObjects?.FirstHitObject == hitObject) // Difficulty for EvenHitObjects
-                difficulty += evaluateDifficultyOf(rhythm.EvenHitObjects, hitWindow);
+                difficulty += evaluateDifficultyOf(rhythm.EvenHitObjects, hitWindow) ;
 
             if (rhythm.EvenPatterns?.FirstHitObject == hitObject) // Difficulty for EvenPatterns
-                difficulty += evaluateDifficultyOf(rhythm.EvenPatterns) * rhythm.Difficulty;
+                difficulty += evaluateDifficultyOf(rhythm.EvenPatterns, rhythm.Difficulty) * rhythm.Difficulty;
 
-            return difficulty;
+            return Math.Pow(difficulty, 1);
         }
     }
 }
