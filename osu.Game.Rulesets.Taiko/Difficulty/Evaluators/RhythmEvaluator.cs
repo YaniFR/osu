@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         /// <summary>
         /// Calculates the difficulty of a given ratio using a combination of periodic penalties and bonuses.
         /// </summary>
-        private static double ratioDifficulty(double ratio, double duration = 1.0, double diff = 1, double interval = 1.0, double childrenInterval = 1.0, int terms = 8)
+        private static double ratioDifficulty(double ratio, double duration = 1.0, double diff = 1, double interval = 1.0, double averageInterval = 1.0, int terms = 8)
         {
             // Sum of n = 8 terms of periodic penalty.
             double difficulty = 0;
@@ -53,7 +53,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
             //difficulty *= diff != 0.35 && (interval <= childrenInterval) ? duration : 1;
             //difficulty *=  diff == 0.3 ? 0 : 1;
-            difficulty *= diff != 0.35 && interval < childrenInterval ? 1 : 0.0;
+            difficulty *= diff != 0.35 && interval < averageInterval ? 1 : 0.0;
             
             return difficulty / Math.Pow(8, 0.15);
             //return difficulty / Math.Sqrt(8);

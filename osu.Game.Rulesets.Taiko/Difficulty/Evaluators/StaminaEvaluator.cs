@@ -77,7 +77,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
                 penalty *= DifficultyCalculationUtils.Logistic(Math.Abs(1 - ratio), 0.1, 1, 1);
                 penalty *= DifficultyCalculationUtils.Logistic(Math.Abs(1 - ratio), 0.5, 1, 1);
 
-                return Math.Pow(penalty, 0.255 * Math.Pow(evenPatterns.Children.Count , 0.445));
+                return Math.Pow(penalty, 0.255 * Math.Pow(evenPatterns.Children.Count , 0.25));
             }
 
             return 1.0;
