@@ -84,10 +84,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             double doubletCount = 0;
             if (evenHitObjects == null || evenPatterns == null || evenHitObjects.Previous == null || evenHitObjects.Previous.Previous == null || mono == null)
                 return 1.0;
-
-            //if (evenPatterns.Children.Count > 1 && hitObject.Colour.MonoStreak?.HitObjects.Count != 2 && evenHitObjects.HitObjectIntervalRatio != evenPatterns.ChildrenInterval)
-            if (evenHitObjects.Previous.Children.Count == 2 && evenHitObjects.StartTime - evenHitObjects.Previous.EndTime > 100 && evenHitObjects.Previous.Duration < 55 && evenHitObjects.Children.Count > 2) // && ((evenHitObjects.HitObjectIntervalRatio == evenHitObjects.Previous.Previous.HitObjectIntervalRatio) && evenHitObjects.Previous.HitObjectIntervalRatio < evenHitObjects.HitObjectIntervalRatio))
-            //if (evenHitObjects.Previous.Children.Count == 2 && ((evenHitObjects.HitObjectIntervalRatio == evenHitObjects.Previous.Previous.HitObjectIntervalRatio) && evenHitObjects.Previous.HitObjectIntervalRatio > evenHitObjects.HitObjectIntervalRatio))
+                
+            if (evenHitObjects.Previous.Children.Count == 2 && evenHitObjects.StartTime - evenHitObjects.Previous.EndTime > 100 && evenHitObjects.Previous.Duration < 55 && evenHitObjects.Children.Count > 2) 
             {
 
                 for (int i = 0; i < evenHitObjects.Children.Count - 1; i++)
@@ -116,7 +114,6 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         public static double EvaluateDifficultyOf(DifficultyHitObject hitObject)
         {
             TaikoDifficultyHitObjectColour colour = ((TaikoDifficultyHitObject)hitObject).Colour;
-            //TaikoDifficultyHitObjectRhythm rhythm = ((TaikoDifficultyHitObject)hitObject).Rhythm;
             var taikoObject = (TaikoDifficultyHitObject)hitObject;
             double difficulty = 0.0d;
 
@@ -127,10 +124,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
                 difficulty += EvaluateDifficultyOf(colour.AlternatingMonoPattern);
 
             if (colour.RepeatingHitPattern?.FirstHitObject == hitObject) // Difficulty for RepeatingHitPattern
-                difficulty += EvaluateDifficultyOf(colour.RepeatingHitPattern);
-            double dz = 1;
-            if (taikoObject.Rhythm.EvenHitObjects?.FirstHitObject == hitObject && taikoObject.Rhythm.EvenPatterns?.FirstHitObject == hitObject)
-                dz = doubletPenalty((TaikoDifficultyHitObject)hitObject);   
+                difficulty += EvaluateDifficultyOf(colour.RepeatingHitPattern);   
 
             double consistencyPenalty = consistentIntervalPenalty(taikoObject);
             difficulty *= consistencyPenalty;
