@@ -40,14 +40,26 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
         [JsonProperty("colour_difficulty")]
         public double ColourDifficulty { get; set; }
 
+        /// <summary>
+        /// The penalty factor corresponding to patterns based on their correlation between skills.
+        /// </summary>
+        [JsonProperty("simple_pattern_factor")]
+        public double SimplePattern { get; set; }
+
+        /// <summary>
+        /// Determines the amount of difficult strain peaks present within each skill.
+        /// </summary>
+        [JsonProperty("stamina_difficult_strains")]
+        public double StaminaTopStrains { get; set; }
+
         [JsonProperty("rhythm_difficult_strains")]
         public double RhythmTopStrains { get; set; }
 
+        [JsonProperty("reading_difficult_strains")]
+        public double ReadingTopStrains { get; set; }
+
         [JsonProperty("colour_difficult_strains")]
         public double ColourTopStrains { get; set; }
-
-        [JsonProperty("stamina_difficult_strains")]
-        public double StaminaTopStrains { get; set; }
 
         /// <summary>
         /// The perceived hit window for a GREAT hit inclusive of rate-adjusting mods (DT/HT/etc).
